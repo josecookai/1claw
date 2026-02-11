@@ -104,6 +104,12 @@ export default function Home() {
             <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">OpenClaw as a Service</p>
           </div>
           <div className="flex items-center gap-3">
+            <a href="/pricing" className="rounded-full border border-[var(--line)] px-4 py-2 text-xs font-medium transition hover:border-[var(--ink)]">
+              {lang === "zh-CN" ? "价格" : "Pricing"}
+            </a>
+            <a href="/onboarding" className="rounded-full border border-[var(--line)] px-4 py-2 text-xs font-medium transition hover:border-[var(--ink)]">
+              {lang === "zh-CN" ? "开始" : "Start"}
+            </a>
             <a
               href={`${OPENCLAW_URL}/login`}
               className="rounded-full border border-[var(--line)] px-4 py-2 text-xs font-medium transition hover:border-[var(--ink)]"
