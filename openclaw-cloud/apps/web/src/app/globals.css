@@ -1,8 +1,21 @@
 @import "tailwindcss";
 
+:root {
+  --surface: #f5f5f5;
+  --ink: #0d0d0d;
+  --ink-muted: #737373;
+  --line: #e5e5e5;
+  --accent: #262626;
+}
+
 @theme {
   --color-primary: #0f172a;
   --color-primary-foreground: #fff;
   --color-muted: #64748b;
   --color-muted-foreground: #94a3b8;
+}
+
+.bg-dots {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+  background-size: 12px 12px;
 }

@@ -10,6 +10,7 @@ datasource db {
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
+  password  String
   createdAt DateTime @default(now())
 
   subscriptions  Subscription[]
@@ -19,9 +20,10 @@ model User {
 }
 
 model Subscription {
-  id       String   @id @default(cuid())
+  id       String    @id @default(cuid())
   plan     String
-  status   String   // ACTIVE, CANCELLED, EXPIRED
+  status   String    // ACTIVE, CANCELLED, EXPIRED
+  policy   String?   // BEST, CHEAP, CN_OK
   renewAt  DateTime
   provider String?
   userId   String

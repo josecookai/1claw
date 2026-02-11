@@ -1,8 +1,10 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
-import { routeWithFallback, RouterError } from 'router-core';
+import { routeWithFallback, RouterError, callOpenAI } from 'router-core';
 import { ERROR_CODES } from 'shared';
 import { randomUUID } from 'crypto';
+
+const OPENAI_KEY = process.env.OPENAI_API_KEY;
 
 const DAILY_LIMITS: Record<string, number> = {
   starter_20: 10_000,
@@ -65,7 +67,17 @@ export class ChatController {
         policy: policy as 'BEST' | 'CHEAP' | 'CN_OK',
       });
 
-      const tokens = Math.ceil(message.length * 1.5);
+      let reply: string;
+      let tokens = Math.ceil(message.length * 1.5);
+
+      if (result.provider === 'openai' && OPENAI_KEY) {
+        const openaiResult = await callOpenAI(OPENAI_KEY, message, result.model);
+        reply = openaiResult.reply;
+        tokens = openaiResult.tokens ?? tokens;
+      } else {
+        reply = `[Stub] You said: ${message}`;
+      }
+
       await this.prisma.usageLedger.create({
         data: {
           userId,
@@ -77,7 +89,7 @@ export class ChatController {
       });
 
       return {
-        reply: `[Stub] You said: ${message}`,
+        reply,
         providerUsed: result.provider,
         requestId,
       };

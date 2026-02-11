@@ -1,6 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { PrismaService } from '../../prisma.service';
+import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { PrismaService } from '../../prisma.service';
 
 @Controller('v1')
 export class OnboardingController {
@@ -10,9 +11,10 @@ export class OnboardingController {
   async complete(@Body() body: { plan: string; policy: string }) {
     const { plan = 'pro_40', policy = 'BEST' } = body;
     const bindCode = 'OC-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+    const password = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
 
     const user = await this.prisma.user.create({
-      data: { email: `onboard-${Date.now()}@openclaw.dev` },
+      data: { email: `onboard-${Date.now()}@openclaw.dev`, password },
     });
 
     const renewAt = new Date();
