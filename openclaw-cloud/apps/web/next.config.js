@@ -4,6 +4,7 @@ const path = require('path');
 const nextConfig = {
   transpilePackages: ['shared'],
   outputFileTracingRoot: path.join(__dirname, '../../'),
+  output: 'export',
 };
 
 module.exports = nextConfig;

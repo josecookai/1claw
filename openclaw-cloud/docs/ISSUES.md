@@ -23,6 +23,7 @@ JWT_SECRET="change-me-in-production"
 OPENAI_API_KEY=""  # 可选，配置后使用真实 GPT
 TELEGRAM_BOT_TOKEN=""
 API_BASE_URL="http://localhost:3001/api"  # Bot 调用 API
+INTERNAL_API_SECRET=""  # 与 API 一致，Bot 调用 Chat 时需传 X-Internal-Secret
 ```
 
 ## 迁移

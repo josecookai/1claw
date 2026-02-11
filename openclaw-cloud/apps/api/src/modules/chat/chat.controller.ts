@@ -1,108 +1,121 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
 import { PrismaService } from '../../prisma.service';
-import { routeWithFallback, RouterError, callOpenAI } from 'router-core';
+import { CreditsService } from '../billing/credits.service';
+import {
+  getProviderOrder,
+  callOpenAI,
+  callKimi,
+  PROVIDER_MODELS,
+  type ProviderResult,
+} from 'router-core';
 import { ERROR_CODES } from 'shared';
 import { randomUUID } from 'crypto';
+import { ChatAuthGuard } from '../../common/guards/chat-auth.guard';
+import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
 
 const OPENAI_KEY = process.env.OPENAI_API_KEY;
+const MOONSHOT_KEY = process.env.MOONSHOT_API_KEY;
 
-const DAILY_LIMITS: Record<string, number> = {
-  starter_20: 10_000,
-  pro_40: 50_000,
-  max_200: 200_000,
-};
+function fallbackTokenEstimate(message: string): number {
+  return Math.ceil(message.length * 1.5);
+}
+
+/** Credits to debit per request (pre-call estimate; actual tokens may differ) */
+function estimateCreditsForMessage(message: string): number {
+  return Math.max(50, Math.ceil(message.length * 1.5));
+}
+
+async function callProvider(
+  provider: string,
+  message: string,
+  model: string,
+): Promise<ProviderResult> {
+  if (provider === 'openai' && OPENAI_KEY) {
+    return callOpenAI(OPENAI_KEY, message, model);
+  }
+  if (provider === 'kimi' && MOONSHOT_KEY) {
+    return callKimi(MOONSHOT_KEY, message, model);
+  }
+  throw new Error(`Provider ${provider} not configured`);
+}
 
 @Controller('v1')
 export class ChatController {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private creditsService: CreditsService,
+  ) {}
 
   @Post('chat')
+  @UseGuards(ChatAuthGuard, RateLimitGuard)
   async chat(
-    @Body() body: { userId?: string; chatId?: string; message: string; policy?: string },
+    @Req() req: Request & { userId?: string },
+    @Body() body: { message: string; policy?: string },
   ) {
     const { message, policy = 'BEST' } = body;
     const requestId = randomUUID();
-
-    let userId = body.userId;
-    if (!userId && body.chatId) {
-      const binding = await this.prisma.telegramBinding.findFirst({
-        where: { chatId: body.chatId },
-      });
-      userId = binding?.userId;
-    }
+    const userId = req.userId;
     if (!userId) {
       return { error: 'AUTH_REQUIRED', requestId };
     }
 
-    const sub = await this.prisma.subscription.findFirst({
-      where: { userId, status: 'ACTIVE' },
-      orderBy: { renewAt: 'desc' },
-    });
-    if (!sub) {
+    const { plan, mode, queued, balance } = await this.creditsService.getPlanAndMode(userId);
+    if (queued || balance <= 0) {
       return {
-        error: ERROR_CODES.BILLING_SUBSCRIPTION_INACTIVE,
+        error: balance <= 0 ? ERROR_CODES.BILLING_QUOTA_EXCEEDED : 'BILLING_QUEUED',
+        message: balance <= 0 ? 'Credits exhausted. Top-up to continue.' : 'Low credits. Queue mode.',
         requestId,
       };
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const usage = await this.prisma.usageLedger.aggregate({
-      where: { userId, day: today },
-      _sum: { tokens: true },
-    });
-    const used = usage._sum.tokens ?? 0;
-    const limit = DAILY_LIMITS[sub.plan] ?? 10_000;
-    if (used >= limit) {
+    const estimatedCredits = estimateCreditsForMessage(message);
+    const { ok } = await this.creditsService.debitForChat(userId, requestId, estimatedCredits);
+    if (!ok) {
       return {
         error: ERROR_CODES.BILLING_QUOTA_EXCEEDED,
         requestId,
       };
     }
 
-    try {
-      const result = await routeWithFallback({
-        userId,
-        message,
-        policy: policy as 'BEST' | 'CHEAP' | 'CN_OK',
-      });
+    const providerOrder = getProviderOrder(policy as 'BEST' | 'CHEAP' | 'CN_OK');
+    let lastError: Error | null = null;
 
-      let reply: string;
-      let tokens = Math.ceil(message.length * 1.5);
+    for (const provider of providerOrder) {
+      const model = PROVIDER_MODELS[provider] ?? 'gpt-4o';
+      try {
+        const result = await callProvider(provider, message, model);
+        const tokens = result.tokens ?? fallbackTokenEstimate(message);
 
-      if (result.provider === 'openai' && OPENAI_KEY) {
-        const openaiResult = await callOpenAI(OPENAI_KEY, message, result.model);
-        reply = openaiResult.reply;
-        tokens = openaiResult.tokens ?? tokens;
-      } else {
-        reply = `[Stub] You said: ${message}`;
-      }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        await this.prisma.usageLedger.create({
+          data: {
+            userId,
+            day: today,
+            tokens,
+            cost: 0,
+            provider: result.provider,
+          },
+        });
 
-      await this.prisma.usageLedger.create({
-        data: {
-          userId,
-          day: today,
-          tokens,
-          cost: 0,
-          provider: result.provider,
-        },
-      });
-
-      return {
-        reply,
-        providerUsed: result.provider,
-        requestId,
-      };
-    } catch (e) {
-      if (e instanceof RouterError) {
         return {
-          error: e.code,
-          message: e.message,
-          retryable: e.retryable,
+          reply: result.reply,
+          providerUsed: result.provider,
+          tier: mode,
+          plan,
           requestId,
         };
+      } catch (e) {
+        lastError = e instanceof Error ? e : new Error(String(e));
       }
-      throw e;
     }
+
+    return {
+      error: 'ROUTER_NO_PROVIDER',
+      message: lastError?.message ?? 'All providers failed',
+      retryable: true,
+      requestId,
+    };
   }
 }

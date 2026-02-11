@@ -22,10 +22,14 @@ export async function handleMessage(ctx: Context) {
   }
   await redis.set(key, String(now), 'EX', RATE_WINDOW + 1);
 
+  const internalSecret = process.env.INTERNAL_API_SECRET ?? '';
   try {
     const res = await fetch(`${API_BASE}/v1/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(internalSecret ? { 'X-Internal-Secret': internalSecret } : {}),
+      },
       body: JSON.stringify({ chatId, message: text, policy: 'BEST' }),
     });
     const data = (await res.json()) as {

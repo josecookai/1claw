@@ -1,7 +1,6 @@
 import type { Policy } from 'shared';
 import { RouterError } from './errors';
 import { route } from './route';
-import { stubCall } from './providers/stub';
 
 export interface RouteRequest {
   userId: string;
@@ -16,47 +15,34 @@ export interface RouteResult {
   latencyMs?: number;
 }
 
-const POLICY_ORDER: Record<Policy, string[]> = {
+export const POLICY_ORDER: Record<Policy, string[]> = {
   BEST: ['openai', 'kimi'],
   CHEAP: ['kimi', 'openai'],
   CN_OK: ['kimi', 'openai'],
 };
 
+export const PROVIDER_MODELS: Record<string, string> = {
+  kimi: 'moonshot-v1-8k',
+  openai: 'gpt-4o',
+};
+
+export function getProviderOrder(policy: Policy): string[] {
+  return POLICY_ORDER[policy] ?? ['openai', 'kimi'];
+}
+
+/** Returns the first provider in policy order (routing decision only; actual LLM call in controller). */
 export async function routeWithFallback(
   request: RouteRequest,
-  options?: { forceFail?: Record<string, boolean> },
+  _options?: { forceFail?: Record<string, boolean> },
 ): Promise<RouteResult> {
-  const order = POLICY_ORDER[request.policy];
-  let lastError: Error | null = null;
-
-  const PROVIDERS: Record<string, { model: string }> = {
-    kimi: { model: 'moonshot-v1' },
-    openai: { model: 'gpt-4o' },
-  };
-
-  for (const provider of order) {
-    try {
-      const { success, latencyMs } = await stubCall(
-        provider,
-        request.message,
-        options?.forceFail?.[provider] ? { forceFail: true } : undefined,
-      );
-      if (success && PROVIDERS[provider]) {
-        return {
-          provider,
-          model: PROVIDERS[provider].model,
-          headers: {},
-          latencyMs,
-        };
-      }
-    } catch (e) {
-      lastError = e instanceof Error ? e : new Error(String(e));
-    }
+  const order = getProviderOrder(request.policy);
+  const provider = order[0];
+  if (!provider || !PROVIDER_MODELS[provider]) {
+    throw new RouterError('ROUTER_NO_PROVIDER', 'No provider configured', true);
   }
-
-  throw new RouterError(
-    'ROUTER_NO_PROVIDER',
-    lastError?.message ?? 'All providers failed',
-    true,
-  );
+  return {
+    provider,
+    model: PROVIDER_MODELS[provider],
+    headers: {},
+  };
 }

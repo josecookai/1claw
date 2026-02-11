@@ -33,21 +33,15 @@ describe('route', () => {
 });
 
 describe('routeWithFallback', () => {
-  it('falls back to B when A fails', async () => {
-    const r = await routeWithFallback(
-      { userId: 'u1', message: 'hi', policy: 'BEST' },
-      { forceFail: { openai: true } },
-    );
-    expect(r.provider).toBe('kimi');
-    expect(r.model).toBe('moonshot-v1');
+  it('returns first provider for BEST policy', async () => {
+    const r = await routeWithFallback({ userId: 'u1', message: 'hi', policy: 'BEST' });
+    expect(r.provider).toBe('openai');
+    expect(r.model).toBe('gpt-4o');
   });
 
-  it('throws when all providers fail', async () => {
-    await expect(
-      routeWithFallback(
-        { userId: 'u1', message: 'hi', policy: 'BEST' },
-        { forceFail: { openai: true, kimi: true } },
-      ),
-    ).rejects.toThrow(RouterError);
+  it('returns kimi first for CN_OK policy', async () => {
+    const r = await routeWithFallback({ userId: 'u1', message: 'hi', policy: 'CN_OK' });
+    expect(r.provider).toBe('kimi');
+    expect(r.model).toBe('moonshot-v1-8k');
   });
 });

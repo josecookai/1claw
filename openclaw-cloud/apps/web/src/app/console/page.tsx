@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
 
+type Skill = { id: string; slug: string; nameZh: string; nameEn: string; category?: string; isPreinstalled?: boolean };
+
 export default function ConsolePage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -16,6 +18,8 @@ export default function ConsolePage() {
   const [instances, setInstances] = useState<{
     instances: Array<{ id: string; status: string; region: string; createdAt: string }>;
   } | null>(null);
+  const [allSkills, setAllSkills] = useState<{ skills: Skill[] } | null>(null);
+  const [mySkills, setMySkills] = useState<{ skills: Skill[] } | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -42,6 +46,16 @@ export default function ConsolePage() {
         .then((r) => r.json())
         .then(setInstances)
         .catch(() => {});
+      fetch(`${API_BASE}/v1/skills`)
+        .then((r) => r.json())
+        .then(setAllSkills)
+        .catch(() => {});
+      fetch(`${API_BASE}/v1/skills/my`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      })
+        .then((r) => r.json())
+        .then(setMySkills)
+        .catch(() => setMySkills({ skills: [] }));
     }
   }, [mounted, router]);
 
@@ -133,6 +147,50 @@ export default function ConsolePage() {
             ) : (
               <p className="mt-2 text-sm text-[var(--ink-muted)]">暂无实例</p>
             )
+          ) : (
+            <p className="mt-2 text-sm text-[var(--ink-muted)]">加载中...</p>
+          )}
+        </section>
+
+        <section className="rounded-xl border border-[var(--line)] p-6">
+          <h2 className="font-semibold">技能选择</h2>
+          <p className="mt-1 text-xs text-[var(--ink-muted)]">
+            预装技能随套餐默认启用，可额外勾选更多技能
+          </p>
+          {allSkills ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {allSkills.skills.map((s) => {
+                const isSelected = mySkills?.skills?.some((m) => m.id === s.id) ?? s.isPreinstalled;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={async () => {
+                      const token = localStorage.getItem('token');
+                      if (!token) return;
+                      const myIds = mySkills?.skills?.map((m) => m.id) ?? [];
+                      const newIds = isSelected
+                        ? myIds.filter((id) => id !== s.id)
+                        : [...myIds, s.id];
+                      const res = await fetch(`${API_BASE}/v1/skills/select`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({ skillIds: newIds, action: 'replace' }),
+                      });
+                      const data = await res.json();
+                      if (data.skills) setMySkills({ skills: data.skills });
+                    }}
+                    disabled={s.isPreinstalled}
+                    className={`rounded-lg border px-3 py-2 text-xs ${
+                      isSelected ? 'border-[var(--accent)] bg-[var(--accent)]/10' : 'border-[var(--line)]'
+                    } ${s.isPreinstalled ? 'cursor-default opacity-80' : ''}`}
+                  >
+                    {s.nameZh}
+                    {s.isPreinstalled && <span className="ml-1 text-[10px] text-[var(--ink-muted)]">(预装)</span>}
+                  </button>
+                );
+              })}
+            </div>
           ) : (
             <p className="mt-2 text-sm text-[var(--ink-muted)]">加载中...</p>
           )}

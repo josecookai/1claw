@@ -17,7 +17,7 @@ pnpm dev
 
 - Web: http://localhost:3000
 - API: http://localhost:3001/api
-- Bot: 需配置 `TELEGRAM_BOT_TOKEN`、`API_BASE_URL`（API 地址）、`REDIS_URL`
+- Bot: 需配置 `TELEGRAM_BOT_TOKEN`、`API_BASE_URL`（API 地址）、`REDIS_URL`、`INTERNAL_API_SECRET`（与 API 一致，用于 Chat 认证）
 
 ## 项目结构
 

@@ -1,9 +1,20 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { SKILLS_SEED } from './skills-seed';
 
 const prisma = new PrismaClient();
 
 async function main() {
+  // Seed Skill library (Top 100)
+  for (const s of SKILLS_SEED) {
+    await prisma.skill.upsert({
+      where: { slug: s.slug },
+      update: { nameZh: s.nameZh, nameEn: s.nameEn, category: s.category, isPreinstalled: s.isPreinstalled, sortOrder: s.sortOrder },
+      create: { slug: s.slug, nameZh: s.nameZh, nameEn: s.nameEn, category: s.category, isPreinstalled: s.isPreinstalled, sortOrder: s.sortOrder },
+    });
+  }
+  console.log(`Seeded: ${SKILLS_SEED.length} skills`);
+
   const password = await bcrypt.hash('test1234', 10);
   const user = await prisma.user.upsert({
     where: { email: 'test@openclaw.dev' },
