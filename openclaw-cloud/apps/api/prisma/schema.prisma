@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  subscriptions  Subscription[]
+  usageLedgers   UsageLedger[]
+  instances      Instance[]
+  telegramBinding TelegramBinding?
+}
+
+model Subscription {
+  id       String   @id @default(cuid())
+  plan     String
+  status   String   // ACTIVE, CANCELLED, EXPIRED
+  renewAt  DateTime
+  provider String?
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UsageLedger {
+  id       String   @id @default(cuid())
+  userId   String
+  day      DateTime @db.Date
+  tokens   Int      @default(0)
+  cost     Float    @default(0)
+  provider String?
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, day])
+}
+
+model Instance {
+  id        String   @id @default(cuid())
+  userId    String
+  status    String   // PROVISIONING, RUNNING, STOPPED, ERROR
+  region    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model TelegramBinding {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  chatId    String?   @unique // set when user does /bind in Telegram
+  bindCode  String   @unique
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([bindCode])
+  @@index([chatId])
+}
