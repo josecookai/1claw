@@ -246,20 +246,20 @@ export const UI_TEXT = {
 
 export const PAYMENT_LINKS: PaymentLinkMap = {
   starter_20: {
-    stripe: process.env.NEXT_PUBLIC_PAY_STRIPE_STARTER_20 ?? "https://example.com/pay?provider=stripe&tier=starter_20",
+    stripe: process.env.NEXT_PUBLIC_PAY_STRIPE_STARTER_20 ?? "/checkout",
     alipay: process.env.NEXT_PUBLIC_PAY_ALIPAY_STARTER_20 ?? "https://example.com/pay?provider=alipay&tier=starter_20",
     wechatpay:
       process.env.NEXT_PUBLIC_PAY_WECHAT_STARTER_20 ?? "https://example.com/pay?provider=wechatpay&tier=starter_20",
     usdc: process.env.NEXT_PUBLIC_PAY_USDC_STARTER_20 ?? "https://example.com/pay?provider=usdc&tier=starter_20",
   },
   pro_40: {
-    stripe: process.env.NEXT_PUBLIC_PAY_STRIPE_PRO_40 ?? "https://example.com/pay?provider=stripe&tier=pro_40",
+    stripe: process.env.NEXT_PUBLIC_PAY_STRIPE_PRO_40 ?? "/checkout",
     alipay: process.env.NEXT_PUBLIC_PAY_ALIPAY_PRO_40 ?? "https://example.com/pay?provider=alipay&tier=pro_40",
     wechatpay: process.env.NEXT_PUBLIC_PAY_WECHAT_PRO_40 ?? "https://example.com/pay?provider=wechatpay&tier=pro_40",
     usdc: process.env.NEXT_PUBLIC_PAY_USDC_PRO_40 ?? "https://example.com/pay?provider=usdc&tier=pro_40",
   },
   max_200: {
-    stripe: process.env.NEXT_PUBLIC_PAY_STRIPE_MAX_200 ?? "https://example.com/pay?provider=stripe&tier=max_200",
+    stripe: process.env.NEXT_PUBLIC_PAY_STRIPE_MAX_200 ?? "/checkout",
     alipay: process.env.NEXT_PUBLIC_PAY_ALIPAY_MAX_200 ?? "https://example.com/pay?provider=alipay&tier=max_200",
     wechatpay: process.env.NEXT_PUBLIC_PAY_WECHAT_MAX_200 ?? "https://example.com/pay?provider=wechatpay&tier=max_200",
     usdc: process.env.NEXT_PUBLIC_PAY_USDC_MAX_200 ?? "https://example.com/pay?provider=usdc&tier=max_200",
