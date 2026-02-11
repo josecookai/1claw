@@ -8,9 +8,10 @@ import { ChatModule } from './modules/chat/chat.module';
 import { InstancesModule } from './modules/instances/instances.module';
 import { UsageModule } from './modules/usage/usage.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
+import { LeadsModule } from './modules/leads/leads.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, BindModule, OnboardingModule, ChatModule, InstancesModule, UsageModule, SubscriptionModule],
+  imports: [PrismaModule, AuthModule, BindModule, OnboardingModule, ChatModule, InstancesModule, UsageModule, SubscriptionModule, LeadsModule],
   controllers: [AppController],
   providers: [],
 })

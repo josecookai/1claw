@@ -35,4 +35,17 @@ export class AuthService {
     const token = this.jwt.sign({ sub: user.id });
     return { userId: user.id, token };
   }
+
+  /** OAuth: find or create user by email, return JWT. OAuth users get a random password. */
+  async oauthLogin(email: string, providerId: string, provider: 'google' | 'github'): Promise<{ userId: string; token: string }> {
+    let user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      const randomPassword = await bcrypt.hash(`${providerId}-${Date.now()}`, 10);
+      user = await this.prisma.user.create({
+        data: { email, password: randomPassword },
+      });
+    }
+    const token = this.jwt.sign({ sub: user.id });
+    return { userId: user.id, token };
+  }
 }

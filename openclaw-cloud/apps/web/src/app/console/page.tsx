@@ -10,6 +10,12 @@ export default function ConsolePage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [usage, setUsage] = useState<{ today: { tokens: number }; recent: Array<{ day: string; tokens: number }> } | null>(null);
+  const [subscription, setSubscription] = useState<{
+    subscription: { id: string; plan: string; status: string; renewAt: string; policy?: string } | null;
+  } | null>(null);
+  const [instances, setInstances] = useState<{
+    instances: Array<{ id: string; status: string; region: string; createdAt: string }>;
+  } | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -27,6 +33,14 @@ export default function ConsolePage() {
       fetch(`${API_BASE}/v1/usage?userId=${userId}`)
         .then((r) => r.json())
         .then(setUsage)
+        .catch(() => {});
+      fetch(`${API_BASE}/v1/subscription?userId=${userId}`)
+        .then((r) => r.json())
+        .then(setSubscription)
+        .catch(() => {});
+      fetch(`${API_BASE}/v1/instances?userId=${userId}`)
+        .then((r) => r.json())
+        .then(setInstances)
         .catch(() => {});
     }
   }, [mounted, router]);
@@ -57,7 +71,19 @@ export default function ConsolePage() {
       <div className="mt-8 space-y-6">
         <section className="rounded-xl border border-[var(--line)] p-6">
           <h2 className="font-semibold">订阅状态</h2>
-          <p className="mt-2 text-sm text-[var(--ink-muted)]">占位：订阅信息将在此显示</p>
+          {subscription ? (
+            subscription.subscription ? (
+              <div className="mt-2 text-sm">
+                <p>套餐: <strong>{subscription.subscription.plan}</strong></p>
+                <p className="mt-1 text-[var(--ink-muted)]">状态: {subscription.subscription.status}</p>
+                <p className="mt-1 text-[var(--ink-muted)]">续期: {new Date(subscription.subscription.renewAt).toLocaleDateString()}</p>
+              </div>
+            ) : (
+              <p className="mt-2 text-sm text-[var(--ink-muted)]">暂无活跃订阅</p>
+            )
+          ) : (
+            <p className="mt-2 text-sm text-[var(--ink-muted)]">加载中...</p>
+          )}
         </section>
 
         <section className="rounded-xl border border-[var(--line)] p-6">
@@ -73,7 +99,43 @@ export default function ConsolePage() {
 
         <section className="rounded-xl border border-[var(--line)] p-6">
           <h2 className="font-semibold">实例状态</h2>
-          <p className="mt-2 text-sm text-[var(--ink-muted)]">占位：实例列表将在此显示</p>
+          {instances ? (
+            instances.instances?.length > 0 ? (
+              <ul className="mt-2 space-y-2 text-sm">
+                {instances.instances.map((i) => (
+                  <li key={i.id} className="flex items-center justify-between rounded border border-[var(--line)] px-3 py-2">
+                    <span className="font-mono text-xs">{i.id.slice(0, 8)}...</span>
+                    <span>{i.status}</span>
+                    <span className="text-[var(--ink-muted)]">{i.region}</span>
+                    {i.status !== 'STOPPED' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const uid = localStorage.getItem('userId');
+                          fetch(`${API_BASE}/v1/instances/${i.id}/stop`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ userId: uid }),
+                          }).then(() => {
+                            fetch(`${API_BASE}/v1/instances?userId=${uid}`)
+                              .then((r) => r.json())
+                              .then(setInstances);
+                          });
+                        }}
+                        className="rounded border border-red-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50"
+                      >
+                        停止
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-sm text-[var(--ink-muted)]">暂无实例</p>
+            )
+          ) : (
+            <p className="mt-2 text-sm text-[var(--ink-muted)]">加载中...</p>
+          )}
         </section>
       </div>
     </main>

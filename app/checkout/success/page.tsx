@@ -4,6 +4,8 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+const OPENCLAW_URL = process.env.NEXT_PUBLIC_OPENCLAW_URL ?? "http://localhost:3002";
+
 function SuccessContent() {
   const params = useSearchParams();
   const plan = params.get("plan") ?? "pro_40";
@@ -23,12 +25,26 @@ function SuccessContent() {
           Session: {sessionId.slice(0, 20)}...
         </p>
       )}
-      <Link
-        href="/"
-        className="mt-8 inline-block rounded-lg bg-[var(--ink)] px-6 py-3 text-sm font-semibold text-white"
-      >
-        Back to Home
-      </Link>
+      <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <a
+          href={`${OPENCLAW_URL}/console`}
+          className="inline-block rounded-lg bg-[var(--ink)] px-6 py-3 text-sm font-semibold text-white"
+        >
+          Open Console
+        </a>
+        <a
+          href={`${OPENCLAW_URL}/login`}
+          className="inline-block rounded-lg border border-[var(--line)] px-6 py-3 text-sm font-semibold"
+        >
+          Sign in
+        </a>
+        <Link
+          href="/"
+          className="inline-block rounded-lg border border-[var(--line)] px-6 py-3 text-sm font-semibold"
+        >
+          Back to Home
+        </Link>
+      </div>
     </main>
   );
 }

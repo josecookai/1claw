@@ -4,6 +4,7 @@ export type ModelId =
   | "kimi"
   | "glm"
   | "claude"
+  | "chatgpt"
   | "gpt-5-2"
   | "gemini-3";
 

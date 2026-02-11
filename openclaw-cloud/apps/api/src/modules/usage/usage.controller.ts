@@ -25,7 +25,7 @@ export class UsageController {
     });
     return {
       today: { tokens: usage._sum.tokens ?? 0, cost: usage._sum.cost ?? 0 },
-      recent: byDay.map((r) => ({ day: r.day, tokens: r._sum.tokens ?? 0, cost: r._sum.cost ?? 0 })),
+      recent: byDay.map((r: { day: Date; _sum: { tokens: number | null; cost: number | null } }) => ({ day: r.day, tokens: r._sum.tokens ?? 0, cost: r._sum.cost ?? 0 })),
     };
   }
 }

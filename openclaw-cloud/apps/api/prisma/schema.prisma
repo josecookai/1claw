@@ -66,3 +66,19 @@ model TelegramBinding {
   @@index([bindCode])
   @@index([chatId])
 }
+
+model Lead {
+  id        String   @id @default(cuid())
+  email     String
+  name      String?
+  plan      String
+  models    String   // JSON array
+  channels  String   // JSON array
+  lang      String
+  intent    String   // waitlist, sales
+  source    String?  @default("landing_v1")
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([intent])
+}

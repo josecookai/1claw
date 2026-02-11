@@ -1,13 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get('returnUrl');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -31,6 +33,11 @@ export default function RegisterPage() {
       if (data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('userId', data.userId);
+        if (returnUrl) {
+          const sep = returnUrl.includes('?') ? '&' : '?';
+          window.location.href = `${returnUrl}${sep}userId=${encodeURIComponent(data.userId)}`;
+          return;
+        }
         router.push('/console');
       }
     } catch {
@@ -75,8 +82,16 @@ export default function RegisterPage() {
         </button>
       </form>
       <p className="mt-4 text-sm text-[var(--ink-muted)]">
-        Have an account? <Link href="/login" className="underline">Login</Link>
+        Have an account? <Link href={returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login'} className="underline">Login</Link>
       </p>
     </main>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<main className="mx-auto max-w-sm px-6 py-12"><span className="animate-spin">...</span></main>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

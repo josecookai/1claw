@@ -20,6 +20,7 @@ export const MODELS: Array<{
   { id: "kimi", name: "Kimi", hint: { "zh-CN": "长文本强", en: "Long-context" } },
   { id: "glm", name: "GLM", hint: { "zh-CN": "国产稳态", en: "China-first" } },
   { id: "claude", name: "Claude", hint: { "zh-CN": "推理能力", en: "Reasoning" } },
+  { id: "chatgpt", name: "ChatGPT", hint: { "zh-CN": "OpenAI 旗舰", en: "OpenAI flagship" } },
   { id: "gpt-5-2", name: "GPT-5.2", hint: { "zh-CN": "全能旗舰", en: "Flagship" } },
   { id: "gemini-3", name: "Gemini 3", hint: { "zh-CN": "多模态", en: "Multimodal" } },
 ];
@@ -247,26 +248,29 @@ export const UI_TEXT = {
 export const PAYMENT_LINKS: PaymentLinkMap = {
   starter_20: {
     stripe: process.env.NEXT_PUBLIC_PAY_STRIPE_STARTER_20 ?? "/checkout",
-    alipay: process.env.NEXT_PUBLIC_PAY_ALIPAY_STARTER_20 ?? "https://example.com/pay?provider=alipay&tier=starter_20",
+    alipay: process.env.NEXT_PUBLIC_PAY_ALIPAY_STARTER_20 ?? "/checkout",
     wechatpay:
-      process.env.NEXT_PUBLIC_PAY_WECHAT_STARTER_20 ?? "https://example.com/pay?provider=wechatpay&tier=starter_20",
+      process.env.NEXT_PUBLIC_PAY_WECHAT_STARTER_20 ?? "/checkout",
     usdc: process.env.NEXT_PUBLIC_PAY_USDC_STARTER_20 ?? "https://example.com/pay?provider=usdc&tier=starter_20",
   },
   pro_40: {
     stripe: process.env.NEXT_PUBLIC_PAY_STRIPE_PRO_40 ?? "/checkout",
-    alipay: process.env.NEXT_PUBLIC_PAY_ALIPAY_PRO_40 ?? "https://example.com/pay?provider=alipay&tier=pro_40",
-    wechatpay: process.env.NEXT_PUBLIC_PAY_WECHAT_PRO_40 ?? "https://example.com/pay?provider=wechatpay&tier=pro_40",
+    alipay: process.env.NEXT_PUBLIC_PAY_ALIPAY_PRO_40 ?? "/checkout",
+    wechatpay: process.env.NEXT_PUBLIC_PAY_WECHAT_PRO_40 ?? "/checkout",
     usdc: process.env.NEXT_PUBLIC_PAY_USDC_PRO_40 ?? "https://example.com/pay?provider=usdc&tier=pro_40",
   },
   max_200: {
     stripe: process.env.NEXT_PUBLIC_PAY_STRIPE_MAX_200 ?? "/checkout",
-    alipay: process.env.NEXT_PUBLIC_PAY_ALIPAY_MAX_200 ?? "https://example.com/pay?provider=alipay&tier=max_200",
-    wechatpay: process.env.NEXT_PUBLIC_PAY_WECHAT_MAX_200 ?? "https://example.com/pay?provider=wechatpay&tier=max_200",
+    alipay: process.env.NEXT_PUBLIC_PAY_ALIPAY_MAX_200 ?? "/checkout",
+    wechatpay: process.env.NEXT_PUBLIC_PAY_WECHAT_MAX_200 ?? "/checkout",
     usdc: process.env.NEXT_PUBLIC_PAY_USDC_MAX_200 ?? "https://example.com/pay?provider=usdc&tier=max_200",
   },
 };
 
 export const WAITLIST_LINK = process.env.NEXT_PUBLIC_WAITLIST_URL ?? "https://example.com/waitlist";
+
+/** openclaw-cloud Web 地址（登录、Console） */
+export const OPENCLAW_URL = process.env.NEXT_PUBLIC_OPENCLAW_URL ?? "http://localhost:3002";
 
 export function t(text: LocalizedText, lang: Lang): string {
   return text[lang];

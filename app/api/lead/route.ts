@@ -29,6 +29,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const apiBase = process.env.OPENCLAW_API_URL;
+    if (apiBase) {
+      const res = await fetch(`${apiBase}/v1/leads`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...parsed.data,
+          source: (payload as { source?: string }).source ?? "landing_v1",
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        return NextResponse.json(
+          { ok: false, error: "Failed to persist lead", details: err },
+          { status: 502 }
+        );
+      }
+    }
+
     return NextResponse.json(
       {
         ok: true,

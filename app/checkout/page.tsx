@@ -4,9 +4,12 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+const OPENCLAW_URL = process.env.NEXT_PUBLIC_OPENCLAW_URL ?? "http://localhost:3002";
+
 function CheckoutContent() {
   const params = useSearchParams();
   const plan = params.get("plan") ?? "pro_40";
+  const userId = params.get("userId") ?? undefined;
   const canceled = params.get("canceled");
   const [error, setError] = useState("");
 
@@ -15,7 +18,7 @@ function CheckoutContent() {
     fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan }),
+      body: JSON.stringify({ plan, userId }),
     })
       .then((r) => r.json())
       .then((data) => {
@@ -28,7 +31,7 @@ function CheckoutContent() {
       .catch(() => {
         setError("Network error");
       });
-  }, [plan, canceled]);
+  }, [plan, userId, canceled]);
 
   if (canceled) {
     return (
@@ -66,6 +69,15 @@ function CheckoutContent() {
     <main className="mx-auto max-w-md px-6 py-12 text-center">
       <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-[var(--ink)] border-t-transparent" />
       <p className="mt-4 text-sm text-[var(--muted)]">Redirecting to Stripe Checkout...</p>
+      <p className="mt-4 text-xs text-[var(--muted)]">
+        Have an account?{" "}
+        <a
+          href={`${OPENCLAW_URL}/login?returnUrl=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "/checkout")}`}
+          className="underline hover:text-[var(--ink)]"
+        >
+          Log in to link payment
+        </a>
+      </p>
     </main>
   );
 }

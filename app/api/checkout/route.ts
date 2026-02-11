@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const plan = (body.plan ?? "pro_40") as string;
+  const userId = body.userId as string | undefined;
   const amount = PLAN_AMOUNTS[plan] ?? 4000;
   const name = PLAN_NAMES[plan] ?? "1Claw Pro";
 
@@ -32,7 +33,10 @@ export async function POST(req: NextRequest) {
   const stripe = new Stripe(secret, { apiVersion: "2025-02-24.acacia" });
 
   const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
+    payment_method_types: ["card", "alipay", "wechat_pay"],
+    payment_method_options: {
+      wechat_pay: { client: "web" },
+    },
     line_items: [
       {
         price_data: {
@@ -50,6 +54,7 @@ export async function POST(req: NextRequest) {
     success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}&plan=${plan}`,
     cancel_url: `${origin}/checkout?plan=${plan}&canceled=1`,
     metadata: { plan },
+    client_reference_id: userId ?? undefined,
   });
 
   return NextResponse.json({ url: session.url });

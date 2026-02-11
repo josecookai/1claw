@@ -19,6 +19,8 @@
     "bcrypt": "^5.1.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-github2": "^0.1.12",
     "@prisma/client": "^5.0.0",
     "prisma": "^5.0.0",
     "reflect-metadata": "^0.2.0",
@@ -32,6 +34,8 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
     "@types/passport-jwt": "^4.0.0",
+    "@types/passport-google-oauth20": "^2.0.16",
+    "@types/passport-github2": "^1.2.9",
     "tsx": "^4.19.0",
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",

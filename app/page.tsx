@@ -6,6 +6,7 @@ import {
   CHANNELS,
   FAQS,
   MODELS,
+  OPENCLAW_URL,
   PAIN_POINTS,
   PAYMENT_LINKS,
   PAYMENT_METHODS,
@@ -25,7 +26,7 @@ export default function Home() {
   const [lang, setLang] = useState<Lang>("zh-CN");
   const [selectedPlan, setSelectedPlan] = useState<PlanId>("pro_40");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>("stripe");
-  const [selectedModels, setSelectedModels] = useState<ModelId[]>(["gpt-5-2", "kimi"]);
+  const [selectedModels, setSelectedModels] = useState<ModelId[]>(["chatgpt", "kimi"]);
   const [selectedChannels, setSelectedChannels] = useState<ChannelId[]>(["telegram"]);
 
   const sharedQuery = useMemo(
@@ -102,13 +103,21 @@ export default function Home() {
             <p className="font-display text-2xl font-semibold tracking-tight">{BRAND_NAME}</p>
             <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">OpenClaw as a Service</p>
           </div>
-          <button
-            type="button"
-            className="rounded-full border border-[var(--line)] px-4 py-2 text-xs font-medium transition hover:border-[var(--ink)]"
-            onClick={() => setLang((current) => (current === "zh-CN" ? "en" : "zh-CN"))}
-          >
-            {lang === "zh-CN" ? "EN" : "中文"}
-          </button>
+          <div className="flex items-center gap-3">
+            <a
+              href={`${OPENCLAW_URL}/login`}
+              className="rounded-full border border-[var(--line)] px-4 py-2 text-xs font-medium transition hover:border-[var(--ink)]"
+            >
+              {lang === "zh-CN" ? "登录" : "Sign in"}
+            </a>
+            <button
+              type="button"
+              className="rounded-full border border-[var(--line)] px-4 py-2 text-xs font-medium transition hover:border-[var(--ink)]"
+              onClick={() => setLang((current) => (current === "zh-CN" ? "en" : "zh-CN"))}
+            >
+              {lang === "zh-CN" ? "EN" : "中文"}
+            </button>
+          </div>
         </header>
 
         <section className="space-y-10">
@@ -358,10 +367,10 @@ export default function Home() {
             © {new Date().getFullYear()} {BRAND_NAME}. MVP Validation Build.
           </p>
           <div className="flex items-center gap-4">
-            <a href="/terms.html" className="hover:text-[var(--ink)]">
+            <a href="/terms" className="hover:text-[var(--ink)]">
               Terms
             </a>
-            <a href="/privacy.html" className="hover:text-[var(--ink)]">
+            <a href="/privacy" className="hover:text-[var(--ink)]">
               Privacy
             </a>
           </div>
