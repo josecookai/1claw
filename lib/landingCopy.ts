@@ -99,8 +99,8 @@ export const copy = {
   en: {
     nav: { pricing: "Pricing", start: "Start", login: "Login" },
     hero: {
-      h1: "Get your AI Agent in 1 minute",
-      sub: "No servers. No API keys. No model picking. Start in the browser with smart routing and never-freeze usage.",
+      h1: "One click to deploy Openclaw, zero code to connect.",
+      sub: "1claw is the first OpenClaw-as-a-Service platform that bridges the world's most powerful LLMs-from GPT-5.3 to Claude Opus 4.6-with your local workflow. No CLI, no complex setup, just a private command center for your AI agents.",
       primary: "Start",
       secondary: "Pricing",
       tertiary: "Join waitlist",
