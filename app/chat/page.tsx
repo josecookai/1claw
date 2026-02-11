@@ -16,6 +16,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [taskStage, setTaskStage] = useState<string>("");
   const [topupOpen, setTopupOpen] = useState(false);
 
   const degrade = credits < 600;
@@ -26,10 +27,16 @@ export default function ChatPage() {
     const requestId = `req_${Date.now()}`;
     setInput("");
     setSending(true);
+    setTaskStage("Reading your request");
     setMessages((prev) => [...prev, { id: `${requestId}_u`, role: "user", text }]);
-    await new Promise((r) => setTimeout(r, 250));
+    await new Promise((r) => setTimeout(r, 350));
+    setTaskStage("Routing to best provider");
+    await new Promise((r) => setTimeout(r, 350));
+    setTaskStage("Executing action");
+    await new Promise((r) => setTimeout(r, 350));
     setCredits((c) => Math.max(0, c - 100));
     setMessages((prev) => [...prev, { id: `${requestId}_a`, role: "assistant", text: `Received: ${text}` }]);
+    setTaskStage("");
     setSending(false);
   };
 
@@ -56,6 +63,12 @@ export default function ChatPage() {
       {degrade ? (
         <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
           Credits are low. Route downgraded automatically to keep replies available.
+        </div>
+      ) : null}
+
+      {sending && taskStage ? (
+        <div className="mt-3 rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-900">
+          Agent executing: {taskStage}...
         </div>
       ) : null}
 

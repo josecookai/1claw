@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { clientIpFromHeaders, rateLimit } from "@/lib/rate-limit";
 
 const leadSchema = z.object({
   email: z.string().email(),
@@ -13,7 +14,27 @@ const leadSchema = z.object({
   intent: z.enum(["waitlist", "sales"]),
 });
 
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
+}
+
 export async function POST(req: NextRequest) {
+  const ip = clientIpFromHeaders(req.headers);
+  const gate = rateLimit(`lead:${ip}`, 20, 60_000);
+  if (!gate.ok) {
+    return NextResponse.json(
+      { ok: false, error: "RATE_LIMITED", retryAt: new Date(gate.resetAt).toISOString() },
+      { status: 429, headers: { "Access-Control-Allow-Origin": "*" } }
+    );
+  }
+
   try {
     const payload = await req.json();
     const parsed = leadSchema.safeParse(payload);
@@ -53,7 +74,7 @@ export async function POST(req: NextRequest) {
         ok: true,
         message: "Lead accepted for MVP processing.",
       },
-      { status: 202 },
+      { status: 202, headers: { "Access-Control-Allow-Origin": "*" } },
     );
   } catch {
     return NextResponse.json(
@@ -61,7 +82,7 @@ export async function POST(req: NextRequest) {
         ok: false,
         error: "Request body must be JSON",
       },
-      { status: 400 },
+      { status: 400, headers: { "Access-Control-Allow-Origin": "*" } },
     );
   }
 }

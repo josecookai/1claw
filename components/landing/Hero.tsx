@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { copy, Lang } from "@/lib/landingCopy";
+import WaitlistForm from "@/components/landing/WaitlistForm";
 
 export default function Hero() {
   const sp = useSearchParams();
@@ -26,9 +27,13 @@ export default function Hero() {
           {t.hero.secondary}
         </a>
 
-        <button className="text-sm text-black/60 hover:text-black" onClick={() => alert("Waitlist placeholder")}>
+        <a href="#waitlist" className="text-sm text-black/60 hover:text-black">
           {t.hero.tertiary}
-        </button>
+        </a>
+      </div>
+
+      <div id="waitlist">
+        <WaitlistForm lang={lang} />
       </div>
     </div>
   );

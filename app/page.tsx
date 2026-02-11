@@ -8,6 +8,7 @@ import HowItWorks from "@/components/landing/HowItWorks";
 import FAQ from "@/components/landing/FAQ";
 import FinalCTA from "@/components/landing/FinalCTA";
 import Footer from "@/components/landing/Footer";
+import VisualPlaceholder from "@/components/landing/VisualPlaceholder";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ export default function Page() {
         <div className="mt-6">
           <Pills />
         </div>
+        <VisualPlaceholder />
 
         <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2">
           <DemoChat />
